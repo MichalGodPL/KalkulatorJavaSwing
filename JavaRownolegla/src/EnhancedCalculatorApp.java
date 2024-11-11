@@ -180,8 +180,8 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
                     while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
                         buffer.append(expression.charAt(i++));
                     }
-                    values.push(Double.parseDouble(buffer.toString()));i--;
-
+                    values.push(Double.parseDouble(buffer.toString()));
+                    i--;
                 } else if (expression.charAt(i) == '(') {
                     ops.push(expression.charAt(i));
                 } else if (expression.charAt(i) == ')') {
