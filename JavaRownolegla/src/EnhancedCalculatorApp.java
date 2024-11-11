@@ -15,7 +15,7 @@ import java.util.Stack;
 
 public class EnhancedCalculatorApp extends JFrame implements ActionListener {
 
-    private JTextField display; // Pole dla wyrażenia i wyniku
+    private final JTextField display; // Pole dla wyrażenia i wyniku
 
     private boolean showingResult = false; // Flaga do oznaczenia, czy wyświetlany jest wynik
 
@@ -110,18 +110,10 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
 
     private static class RoundedButton extends JButton {
 
-        private Color baseColor;
-
-        private Color textColor;
-
 
         public RoundedButton(String text, Color baseColor, Color textColor) {
 
             super(text);
-
-            this.baseColor = baseColor;
-
-            this.textColor = textColor;
 
             setFocusPainted(false);
 
@@ -202,7 +194,7 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
 
         });
 
-        hoverTimer.addActionListener(e -> {
+        hoverTimer.addActionListener(_ -> {
 
             Color targetColor = button.getModel().isRollover() ? hoverColor : originalColor;
 
@@ -250,56 +242,55 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
 
         }
 
-        if (command.equals("C")) {
+        switch (command) {
+            case "C" -> display.setText("0");
+            case "=" -> {
 
-            display.setText("0");
+                try {
 
-        } else if (command.equals("=")) {
+                    String expression = display.getText();
 
-            try {
+                    String result = calculate(expression);
 
-                String expression = display.getText();
+                    display.setText(result);
 
-                String result = calculate(expression);
+                    showingResult = true;  // Ustawiamy flagę, żeby przy następnym wpisaniu wyczyścić ekran
 
-                display.setText(result);
+                } catch (Exception ex) {
 
-                showingResult = true;  // Ustawiamy flagę, żeby przy następnym wpisaniu wyczyścić ekran
+                    display.setText("Error");
 
-            } catch (Exception ex) {
+                    showingResult = true;
 
-                display.setText("Error");
-
-                showingResult = true;
-
+                }
             }
+            case "." -> {
 
-        } else if (command.equals(".")) {
+                String currentText = display.getText();
 
-            String currentText = display.getText();
+                String[] segments = currentText.split("[+\\-×÷]");
 
-            String[] segments = currentText.split("[+\\-×÷]");
+                String lastSegment = segments[segments.length - 1];
 
-            String lastSegment = segments[segments.length - 1];
+                if (!lastSegment.contains(".")) {
 
-            if (!lastSegment.contains(".")) {
+                    display.setText(display.getText() + ".");
 
-                display.setText(display.getText() + ".");
-
+                }
             }
+            default -> {
 
-        } else {
+                // Dodawanie tekstu do pola; resetuje pole, jeśli jest błąd lub zero
 
-            // Dodawanie tekstu do pola; resetuje pole, jeśli jest błąd lub zero
+                if (display.getText().equals("0") || display.getText().equals("Error")) {
 
-            if (display.getText().equals("0") || display.getText().equals("Error")) {
+                    display.setText(command);
 
-                display.setText(command);
+                } else {
 
-            } else {
+                    display.setText(display.getText() + command);
 
-                display.setText(display.getText() + command);
-
+                }
             }
         }
     }
@@ -376,19 +367,16 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
 
     private double applyOp(char op, double b, double a) {
 
-        switch (op) {
-
-            case '+': return a + b;
-
-            case '-': return a - b;
-
-            case '*': return a * b;
-
-            case '/': if (b == 0) throw new UnsupportedOperationException("Cannot divide by zero"); return a / b;
-
-        }
-
-        return 0;
+        return switch (op) {
+            case '+' -> a + b;
+            case '-' -> a - b;
+            case '*' -> a * b;
+            case '/' -> {
+                if (b == 0) throw new UnsupportedOperationException("Cannot divide by zero");
+                yield a / b;
+            }
+            default -> 0;
+        };
 
     }
 
