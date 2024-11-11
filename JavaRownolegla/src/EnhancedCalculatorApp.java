@@ -12,7 +12,7 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
         setSize(400, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(0, 0));
+        setLayout(new BorderLayout());
 
         display = new JTextField("0");
         display.setFont(new Font("Helvetica", Font.BOLD, 40));
@@ -24,7 +24,6 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
         add(display, BorderLayout.NORTH);
 
         JPanel buttonPanel = new JPanel(new GridLayout(5, 4, 10, 10));
-        buttonPanel.setBackground(Color.BLACK);
         Color buttonColor = new Color(60, 60, 60);
         Color operatorColor = new Color(250, 149, 0);
         Color textColor = Color.WHITE;
@@ -38,12 +37,9 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
         };
 
         for (String label : buttonLabels) {
-            RoundedButton button;
-            if (label.matches("[+\\-×÷=]")) {
-                button = new RoundedButton(label, operatorColor, textColor);
-            } else {
-                button = new RoundedButton(label, buttonColor, textColor);
-            }
+            RoundedButton button = label.matches("[+\\-×÷=]") ?
+                    new RoundedButton(label, operatorColor, textColor) :
+                    new RoundedButton(label, buttonColor, textColor);
             button.setFont(new Font("Helvetica", Font.BOLD, 24));
             button.addActionListener(this);
             buttonPanel.add(button);
@@ -59,34 +55,21 @@ public class EnhancedCalculatorApp extends JFrame implements ActionListener {
             showingResult = false;
         }
 
-        switch (command) {
-            case "C" -> display.setText("0");
-            case "=" -> {
-                try {
-                    String expression = display.getText();
-                    String result = CalculatorLogic.calculate(expression);
-                    display.setText(result);
-                    showingResult = true;
-                } catch (Exception ex) {
-                    display.setText("Error");
-                    showingResult = true;
-                }
+        if ("C".equals(command)) display.setText("0");
+        else if ("=".equals(command)) {
+            try {
+                display.setText(CalculatorLogic.calculate(display.getText()));
+                showingResult = true;
+            } catch (Exception ex) {
+                display.setText("Error");
+                showingResult = true;
             }
-            case "." -> {
-                String currentText = display.getText();
-                String[] segments = currentText.split("[+\\-×÷]");
-                String lastSegment = segments[segments.length - 1];
-                if (!lastSegment.contains(".")) {
-                    display.setText(display.getText() + ".");
-                }
-            }
-            default -> {
-                if (display.getText().equals("0") || display.getText().equals("Error")) {
-                    display.setText(command);
-                } else {
-                    display.setText(display.getText() + command);
-                }
-            }
+        } else if (".".equals(command)) {
+            if (!display.getText().split("[+\\-×÷]")[display.getText().split("[+\\-×÷]").length - 1].contains("."))
+                display.setText(display.getText() + ".");
+        } else {
+            display.setText(display.getText().equals("0") || display.getText().equals("Error") ?
+                    command : display.getText() + command);
         }
     }
 }
